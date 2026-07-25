@@ -258,13 +258,14 @@ def create_app():
         entries = ScheduleEntry.query.filter_by(
             user_id=current_user.id, week_start_date=week_start
         ).order_by(ScheduleEntry.day_of_week, ScheduleEntry.start_hour).all()
+        entries_data = [e.to_dict() for e in entries]
 
         subjects = Subject.query.filter_by(user_id=current_user.id).all()
         subject_map = {s.id: s for s in subjects}
         slots = StudySlot.query.filter_by(user_id=current_user.id).all()
         slots_data = [{'day': s.day_of_week, 'start': s.start_hour, 'end': s.end_hour} for s in slots]
 
-        return render_template('schedule.html', entries=entries, subject_map=subject_map,
+        return render_template('schedule.html', entries=entries_data, subject_map=subject_map,
                                slots=slots_data, week_start=week_start.strftime('%Y-%m-%d'))
 
     # ── Stats API ─────────────────────────────────────────────────────────

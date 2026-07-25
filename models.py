@@ -105,5 +105,19 @@ class ScheduleEntry(db.Model):
     # Relationship to task
     task = db.relationship('Task', backref='schedule_entries', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'subject_id': self.subject_id,
+            'task_id': self.task_id,
+            'day_of_week': self.day_of_week,
+            'start_hour': self.start_hour,
+            'duration_hours': self.duration_hours,
+            'week_start_date': self.week_start_date.strftime('%Y-%m-%d') if self.week_start_date else None,
+            'is_completed': self.is_completed
+        }
+
     def __repr__(self):
         return f'<ScheduleEntry Day:{self.day_of_week} {self.start_hour}:00 ({self.duration_hours}h)>'
+
