@@ -39,8 +39,8 @@ class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    priority = db.Column(db.Enum('high', 'medium', 'low', name='priority_enum'), default='medium')
-    difficulty = db.Column(db.Enum('hard', 'medium', 'easy', name='difficulty_enum'), default='medium')
+    priority = db.Column(db.String(10), default='medium')    # high, medium, low
+    difficulty = db.Column(db.String(10), default='medium')  # hard, medium, easy
     weekly_target_hours = db.Column(db.Float, default=5.0)
     color = db.Column(db.String(7), default='#6C63FF')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
