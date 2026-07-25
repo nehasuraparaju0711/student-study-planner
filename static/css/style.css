@@ -7,30 +7,38 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    /* Palette */
-    --bg-primary:   #0f0f1a;
-    --bg-secondary: #161625;
-    --bg-card:      rgba(26, 26, 46, 0.75);
-    --bg-card-hover:rgba(30, 30, 55, 0.85);
-    --bg-glass:     rgba(255,255,255,0.04);
-    --border:       rgba(255,255,255,0.08);
-    --border-focus: rgba(108,99,255,0.5);
+    /* Stitch AI — Lumina Study Glassmorphism Palette */
+    --bg-primary:   #131315;
+    --bg-secondary: #1c1b1d;
+    --bg-card:      rgba(24, 24, 27, 0.65);
+    --bg-card-hover:rgba(35, 34, 39, 0.85);
+    --bg-glass:     rgba(255, 255, 255, 0.04);
+    --border:       rgba(255, 255, 255, 0.08);
+    --border-focus: rgba(183, 109, 255, 0.5);
 
-    --text-primary:   #f0f0f5;
-    --text-secondary: #9d9db5;
-    --text-muted:     #6b6b85;
+    --text-primary:   #e5e1e4;
+    --text-secondary: #cfc2d6;
+    --text-muted:     #988d9f;
 
-    --accent:         #6C63FF;
-    --accent-light:   #8B83FF;
-    --accent-dark:    #5046e5;
-    --gradient:       linear-gradient(135deg, #6C63FF 0%, #3b82f6 100%);
+    --accent-purple:  #ddb7ff;
+    --accent:         #b76dff;
+    --accent-light:   #f0dbff;
+    --accent-dark:    #842bd2;
+    --secondary-cyan: #4cd7f6;
+    --tertiary-green: #4edea3;
+
+    --gradient:       linear-gradient(135deg, #b76dff 0%, #4cd7f6 100%);
     --gradient-warm:  linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-    --gradient-green: linear-gradient(135deg, #10b981 0%, #06d6a0 100%);
-    --gradient-pink:  linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    --gradient-green: linear-gradient(135deg, #4edea3 0%, #00a572 100%);
+    --gradient-pink:  linear-gradient(135deg, #ec4899 0%, #b76dff 100%);
 
-    --success: #10b981;
+    --success: #4edea3;
     --warning: #f59e0b;
-    --danger:  #ef4444;
+    --danger:  #ffb4ab;
+
+    /* Fonts */
+    --font-display: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
     /* Spacing */
     --sp-xs: 0.25rem;
@@ -47,11 +55,13 @@
     --r-xl: 24px;
     --r-full: 9999px;
 
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
-    --shadow-md: 0 4px 20px rgba(0,0,0,0.3);
-    --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
-    --shadow-glow: 0 0 30px rgba(108,99,255,0.15);
+    /* Shadows & Glows */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+    --shadow-glow: 0 0 30px rgba(183, 109, 255, 0.25);
+    --glow-cyan: 0 0 20px rgba(76, 215, 246, 0.25);
+    --glow-emerald: 0 0 20px rgba(78, 222, 163, 0.25);
 
     /* Transitions */
     --tr-fast: 0.15s ease;
@@ -62,8 +72,11 @@
 html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-primary);
+    font-family: var(--font-body);
+    background: radial-gradient(circle at 15% 15%, rgba(183, 109, 255, 0.09) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(76, 215, 246, 0.08) 0%, transparent 45%),
+                var(--bg-primary);
+    background-attachment: fixed;
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -71,10 +84,13 @@ body {
 }
 
 /* ── Typography ───────────────────────────────────────────────────────── */
-h1 { font-size: 1.875rem; font-weight: 800; letter-spacing: -0.02em; }
+h1, h2, h3, .nav-title, .stat-value {
+    font-family: var(--font-display);
+}
+h1 { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; }
 h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
-a  { color: var(--accent-light); text-decoration: none; transition: color var(--tr-fast); }
-a:hover { color: var(--accent); }
+a  { color: var(--accent-purple); text-decoration: none; transition: color var(--tr-fast); }
+a:hover { color: var(--secondary-cyan); }
 
 /* ── Navbar ───────────────────────────────────────────────────────────── */
 .navbar {
