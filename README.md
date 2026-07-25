@@ -35,7 +35,7 @@ A full-stack web application built with **Python Flask, HTML, CSS, JavaScript, a
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/student-study-planner.git
+   git clone https://github.com/nehasuraparaju0711/student-study-planner.git
    cd student-study-planner
    ```
 
