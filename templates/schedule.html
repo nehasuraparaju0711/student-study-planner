@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}{% if show_availability %}Set Availability{% else %}Weekly Schedule{% endif %} — Study Planner{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-row">
+        <div>
+            <h1>{% if show_availability %}Set Your Availability{% else %}Weekly Schedule{% endif %}</h1>
+            <p class="page-subtitle">
+                {% if show_availability %}
+                Click on the time grid to mark when you're available to study
+                {% else %}
+                Your auto-generated study plan for the week of {{ week_start }}
+                {% endif %}
+            </p>
+        </div>
+        {% if not show_availability %}
+        <div class="header-actions">
+            <a href="{{ url_for('availability') }}" class="btn btn-outline" id="btn-edit-availability">Edit Availability</a>
+            <button class="btn btn-primary" onclick="generateSchedule()" id="btn-generate">Generate Schedule</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if show_availability %}
+<!-- ═══ AVAILABILITY GRID ═══ -->
+<div class="card" id="availability-card">
+    <div class="availability-instructions">
+        <p>Click or drag to toggle hours on/off. Green = available for study.</p>
+    </div>
+    <div class="schedule-grid" id="availability-grid">
+        <div class="grid-header">
+            <div class="grid-time-label">Time</div>
+            <div class="grid-day-label">Mon</div>
+            <div class="grid-day-label">Tue</div>
+            <div class="grid-day-label">Wed</div>
+            <div class="grid-day-label">Thu</div>
+            <div class="grid-day-label">Fri</div>
+            <div class="grid-day-label">Sat</div>
+            <div class="grid-day-label">Sun</div>
+        </div>
+        <div class="grid-body" id="grid-body">
+            {% for hour in range(6, 23) %}
+            <div class="grid-row">
+                <div class="grid-time">{{ '%02d' % hour }}:00</div>
+                {% for day in range(7) %}
+                <div class="grid-cell availability-cell"
+                     data-day="{{ day }}" data-hour="{{ hour }}"
+                     id="avail-{{ day }}-{{ hour }}"
+                     onclick="toggleAvailability(this)"></div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveAvailability()" id="btn-save-availability">Save Availability</button>
+        <button class="btn btn-outline" onclick="clearAvailability()" id="btn-clear-availability">Clear All</button>
+    </div>
+</div>
+
+{% else %}
+<!-- ═══ WEEKLY SCHEDULE VIEW ═══ -->
+
+{% if entries %}
+<!-- Subject Legend -->
+<div class="schedule-legend" id="schedule-legend">
+    {% for sid, subj in subject_map.items() %}
+    <div class="legend-item">
+        <span class="legend-color" style="background-color: {{ subj.color }}"></span>
+        <span class="legend-name">{{ subj.name }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card" id="schedule-card">
+    <div class="schedule-grid" id="schedule-grid">
+        <div class="grid-header">
+            <div class="grid-time-label">Time</div>
+            <div class="grid-day-label">Mon</div>
+            <div class="grid-day-label">Tue</div>
+            <div class="grid-day-label">Wed</div>
+            <div class="grid-day-label">Thu</div>
+            <div class="grid-day-label">Fri</div>
+            <div class="grid-day-label">Sat</div>
+            <div class="grid-day-label">Sun</div>
+        </div>
+        <div class="grid-body" id="schedule-body">
+            {% for hour in range(6, 23) %}
+            <div class="grid-row">
+                <div class="grid-time">{{ '%02d' % hour }}:00</div>
+                {% for day in range(7) %}
+                <div class="grid-cell schedule-cell" data-day="{{ day }}" data-hour="{{ hour }}" id="sched-{{ day }}-{{ hour }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if not entries %}
+    <div class="empty-state" id="schedule-empty">
+        <span class="empty-icon">📅</span>
+        <p>No schedule generated yet.</p>
+        <p class="empty-hint">Add subjects, create tasks, set your availability, then click "Generate Schedule".</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if show_availability %}
+    // Pre-fill existing availability
+    const existingSlots = {{ slots | tojson }};
+    existingSlots.forEach(slot => {
+        for (let h = slot.start; h < slot.end; h++) {
+            const cell = document.getElementById(`avail-${slot.day}-${h}`);
+            if (cell) cell.classList.add('available');
+        }
+    });
+    {% else %}
+    // Render schedule entries
+    const entries = {{ entries | tojson if entries else '[]' }};
+    const subjectMap = {};
+    {% if subject_map %}
+    {% for sid, subj in subject_map.items() %}
+    subjectMap[{{ sid }}] = { name: "{{ subj.name }}", color: "{{ subj.color }}" };
+    {% endfor %}
+    {% endif %}
+
+    // Also highlight availability
+    const slots = {{ slots | tojson if slots else '[]' }};
+    slots.forEach(slot => {
+        for (let h = slot.start; h < slot.end; h++) {
+            const cell = document.getElementById(`sched-${slot.day}-${h}`);
+            if (cell) cell.classList.add('slot-available');
+        }
+    });
+
+    entries.forEach(e => {
+        const subj = subjectMap[e.subject_id] || { name: '?', color: '#6C63FF' };
+        for (let h = 0; h < e.duration_hours; h++) {
+            const cell = document.getElementById(`sched-${e.day_of_week}-${e.start_hour + h}`);
+            if (cell) {
+                cell.style.backgroundColor = subj.color + 'CC';
+                cell.classList.add('has-entry');
+                cell.innerHTML = `<span class="entry-label">${subj.name}</span>`;
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

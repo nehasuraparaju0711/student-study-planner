@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}{% if show_tasks %}Tasks{% else %}Subjects{% endif %} — Study Planner{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if show_tasks %}Tasks{% else %}Subjects{% endif %}</h1>
+    <p class="page-subtitle">{% if show_tasks %}Manage your study tasks and deadlines{% else %}Manage your academic subjects{% endif %}</p>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-nav" id="tab-nav">
+    <a href="{{ url_for('subjects') }}" class="tab {% if not show_tasks %}active{% endif %}" id="tab-subjects">Subjects</a>
+    <a href="{{ url_for('tasks') }}" class="tab {% if show_tasks %}active{% endif %}" id="tab-tasks">Tasks</a>
+</div>
+
+{% if not show_tasks %}
+<!-- ═══ SUBJECTS VIEW ═══ -->
+<div class="content-grid">
+    <!-- Add Subject Form -->
+    <div class="card form-card" id="add-subject-card">
+        <h2 class="card-title">Add New Subject</h2>
+        <form method="POST" action="{{ url_for('subjects') }}" class="form-stack" id="subject-form">
+            <div class="form-group">
+                <label for="name">Subject Name</label>
+                <input type="text" id="name" name="name" placeholder="e.g. Mathematics" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority">
+                        <option value="high">🔴 High</option>
+                        <option value="medium" selected>🟡 Medium</option>
+                        <option value="low">🟢 Low</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="difficulty">Difficulty</label>
+                    <select id="difficulty" name="difficulty">
+                        <option value="hard">Hard</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="easy">Easy</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="weekly_target_hours">Weekly Hours Target</label>
+                    <input type="number" id="weekly_target_hours" name="weekly_target_hours" value="5" min="1" max="40" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <input type="color" id="color" name="color" value="#6C63FF" class="color-input">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-add-subject">Add Subject</button>
+        </form>
+    </div>
+
+    <!-- Subjects List -->
+    <div class="card" id="subjects-list-card">
+        <h2 class="card-title">Your Subjects <span class="badge">{{ subjects|length }}</span></h2>
+        {% if subjects %}
+        <div class="items-list">
+            {% for s in subjects %}
+            <div class="item-row" id="subject-row-{{ s.id }}">
+                <div class="item-color" style="background-color: {{ s.color }}"></div>
+                <div class="item-info">
+                    <span class="item-name">{{ s.name }}</span>
+                    <div class="item-meta">
+                        <span class="tag tag--{{ s.priority }}">{{ s.priority }}</span>
+                        <span class="tag tag--difficulty">{{ s.difficulty }}</span>
+                        <span class="item-hours">{{ s.weekly_target_hours }}h/week</span>
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteSubject({{ s.id }})" id="btn-del-subject-{{ s.id }}">Delete</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">📖</span>
+            <p>No subjects yet. Add your first subject to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+<!-- ═══ TASKS VIEW ═══ -->
+<div class="content-grid">
+    <!-- Add Task Form -->
+    <div class="card form-card" id="add-task-card">
+        <h2 class="card-title">Add New Task</h2>
+        {% if subjects %}
+        <form method="POST" action="{{ url_for('tasks') }}" class="form-stack" id="task-form">
+            <div class="form-group">
+                <label for="title">Task Title</label>
+                <input type="text" id="title" name="title" placeholder="e.g. Chapter 5 Problems" required>
+            </div>
+            <div class="form-group">
+                <label for="subject_id">Subject</label>
+                <select id="subject_id" name="subject_id" required>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description (optional)</label>
+                <textarea id="description" name="description" rows="2" placeholder="Brief description..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="deadline">Deadline</label>
+                    <input type="datetime-local" id="deadline" name="deadline" required>
+                </div>
+                <div class="form-group">
+                    <label for="estimated_hours">Estimated Hours</label>
+                    <input type="number" id="estimated_hours" name="estimated_hours" value="2" min="0.5" max="40" step="0.5">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-add-task">Add Task</button>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <p>Add a subject first before creating tasks.</p>
+            <a href="{{ url_for('subjects') }}" class="btn btn-primary">Add Subject</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tasks List -->
+    <div class="card" id="tasks-list-card">
+        <h2 class="card-title">Your Tasks <span class="badge">{{ tasks|length }}</span></h2>
+        {% if tasks %}
+        <div class="items-list">
+            {% for t in tasks %}
+            <div class="item-row {% if t.completed %}item-completed{% endif %}" id="task-row-{{ t.id }}">
+                <button class="check-btn {% if t.completed %}checked{% endif %}" onclick="toggleTask({{ t.id }})" id="btn-check-{{ t.id }}">
+                    {% if t.completed %}✓{% endif %}
+                </button>
+                <div class="item-info">
+                    <span class="item-name {% if t.completed %}line-through{% endif %}">{{ t.title }}</span>
+                    <div class="item-meta">
+                        <span class="item-subject">{{ t.subject.name }}</span>
+                        <span class="item-deadline {% if t.deadline < now %}overdue{% endif %}">📅 {{ t.deadline.strftime('%b %d, %H:%M') }}</span>
+                        <span class="item-hours">{{ t.estimated_hours }}h</span>
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteTask({{ t.id }})" id="btn-del-task-{{ t.id }}">Delete</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">📝</span>
+            <p>No tasks yet. Create one to start scheduling!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

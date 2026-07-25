@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Study Planner{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p class="page-subtitle">Your study overview at a glance</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid" id="stats-grid">
+    <div class="stat-card stat-card--primary">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_tasks }}</span>
+            <span class="stat-label">Total Tasks</span>
+        </div>
+    </div>
+    <div class="stat-card stat-card--success">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.completion_rate }}%</span>
+            <span class="stat-label">Completion Rate</span>
+        </div>
+    </div>
+    <div class="stat-card stat-card--accent">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total_study_hours }}h</span>
+            <span class="stat-label">Study Hours</span>
+        </div>
+    </div>
+    <div class="stat-card stat-card--warning">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.deadline_adherence }}%</span>
+            <span class="stat-label">On-Time Rate</span>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-row">
+    <!-- Subject Distribution -->
+    <div class="card chart-card" id="subject-chart-card">
+        <h2 class="card-title">Hours by Subject</h2>
+        <div class="chart-container">
+            <canvas id="subjectChart"></canvas>
+            {% if not stats.hours_by_subject %}
+            <div class="chart-empty">
+                <p>No schedule data yet. Generate a schedule to see analytics.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Daily Distribution -->
+    <div class="card chart-card" id="daily-chart-card">
+        <h2 class="card-title">Hours by Day</h2>
+        <div class="chart-container">
+            <canvas id="dailyChart"></canvas>
+            {% if not stats.hours_by_day %}
+            <div class="chart-empty">
+                <p>No schedule data yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Deadlines -->
+<div class="card" id="upcoming-deadlines-card">
+    <h2 class="card-title">Upcoming Deadlines <span class="badge">Next 7 Days</span></h2>
+    {% if stats.upcoming_deadlines %}
+    <div class="deadline-list">
+        {% for d in stats.upcoming_deadlines %}
+        <div class="deadline-item">
+            <div class="deadline-info">
+                <span class="deadline-title">{{ d.title }}</span>
+                <span class="deadline-subject">{{ d.subject }}</span>
+            </div>
+            <span class="deadline-date">{{ d.deadline }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>🎉 No deadlines in the next 7 days!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions" id="quick-actions">
+    <a href="{{ url_for('subjects') }}" class="action-card" id="action-add-subject">
+        <span class="action-icon">📖</span>
+        <span class="action-label">Add Subject</span>
+    </a>
+    <a href="{{ url_for('tasks') }}" class="action-card" id="action-add-task">
+        <span class="action-icon">📝</span>
+        <span class="action-label">Add Task</span>
+    </a>
+    <a href="{{ url_for('availability') }}" class="action-card" id="action-set-hours">
+        <span class="action-icon">🕐</span>
+        <span class="action-label">Set Availability</span>
+    </a>
+    <a href="{{ url_for('schedule') }}" class="action-card" id="action-view-schedule">
+        <span class="action-icon">📅</span>
+        <span class="action-label">View Schedule</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hoursSubject = {{ stats.hours_by_subject | tojson }};
+    const hoursDay = {{ stats.hours_by_day | tojson }};
+
+    if (Object.keys(hoursSubject).length > 0) {
+        drawBarChart('subjectChart', Object.keys(hoursSubject), Object.values(hoursSubject), 'Hours');
+    }
+    if (Object.keys(hoursDay).length > 0) {
+        drawBarChart('dailyChart', Object.keys(hoursDay), Object.values(hoursDay), 'Hours');
+    }
+});
+</script>
+{% endblock %}

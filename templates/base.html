@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Study Planner — Auto-generate personalized weekly study schedules based on your subjects, deadlines, and available hours.">
+    <title>{% block title %}Study Planner{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="navbar" id="main-nav">
+        <div class="nav-brand">
+            <span class="nav-icon">📚</span>
+            <span class="nav-title">StudyPlanner</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                <span class="nav-link-icon">📊</span> Dashboard
+            </a>
+            <a href="{{ url_for('subjects') }}" class="nav-link {% if request.endpoint in ['subjects', 'tasks'] %}active{% endif %}" id="nav-subjects">
+                <span class="nav-link-icon">📖</span> Subjects & Tasks
+            </a>
+            <a href="{{ url_for('schedule') }}" class="nav-link {% if request.endpoint == 'schedule' %}active{% endif %}" id="nav-schedule">
+                <span class="nav-link-icon">📅</span> Schedule
+            </a>
+        </div>
+        <div class="nav-user">
+            <span class="nav-username">{{ current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm" id="btn-logout">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}" id="flash-msg">
+                    {{ message }}
+                    <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
