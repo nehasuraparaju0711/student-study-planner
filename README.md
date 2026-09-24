@@ -1,37 +1,104 @@
 # 📚 Student Study Planner
 
-A full-stack web application built with **Python Flask, HTML, CSS, JavaScript, and MySQL** that processes user-input data (subjects, deadlines, available hours) to auto-generate a personalized weekly study schedule using rule-based logic.
+A full-stack, intelligent study planner web application built with **Python Flask**, **SQLite / MySQL**, and modern **Glassmorphism CSS/JS UI**. It processes student subjects, task deadlines, and available time slots to automatically generate an optimized, personalized weekly study schedule using a composite scoring algorithm.
 
-## Features
+---
 
-- **User Authentication** — Signup/login with secure password hashing
-- **Subject Management** — Add subjects with priority, difficulty, weekly target hours, and color coding
-- **Task Tracking** — Create tasks with deadlines and estimated hours; mark as complete
-- **Availability Grid** — Interactive drag-to-select weekly availability calendar
-- **Auto-Scheduling** — Rule-based engine generates optimized weekly study schedules using composite scoring:
-  - Deadline urgency scoring
-  - Priority weighting (High: 3x, Medium: 2x, Low: 1x)
-  - Difficulty-based block sizing
-  - Spaced repetition across days
-  - Balance cap (no subject > 40% of weekly hours)
-- **Analytics Dashboard** — Completion rate, study hours breakdown, deadline adherence, upcoming deadlines
-- **Persistent Data** — MySQL database stores user data across sessions for pattern tracking
+## 🌟 Highlights & Features
 
-## Tech Stack
+- 🔐 **User Authentication** — Secure user signup and login system using Flask-Login and password hashing via Werkzeug (`pbkdf2:sha256`).
+- 📚 **Subject Management** — Organize subjects with customizable target weekly hours, difficulty level (*Hard*, *Medium*, *Easy*), priority weighting (*High*, *Medium*, *Low*), and vibrant hex color codes.
+- 📝 **Task Tracking with Deadlines** — Add study tasks linked to specific subjects with estimated effort hours and strict completion deadlines.
+- 📅 **Interactive Availability Grid** — Intuitive, drag-to-select weekly calendar grid (Monday–Sunday, 6 AM–11 PM) to set free study windows.
+- ⚡ **Smart Auto-Scheduler Engine** — Composite scoring rule engine that balances workload across available slots considering:
+  - **Deadline Urgency** ($1 / \text{days remaining}$)
+  - **Priority Weighting** (High: 3.0×, Medium: 2.0×, Low: 1.0×)
+  - **Difficulty Block Sizing** (Hard: +50% allocation boost)
+  - **Spaced Repetition** (distributes study sessions across days to avoid cramming)
+  - **Balance Cap** (prevents any single subject from exceeding 40% of weekly capacity)
+- 📊 **Analytics & Visualizations** — Visual breakdown of completion status, subject study hour distribution, deadline adherence rate, and interactive canvas charts.
+- 💎 **Lumina Glassmorphic Dark UI** — Modern, aesthetic dark-mode user interface featuring translucent glass cards, fluid gradient accents, and responsive layout.
+- 🗄️ **Dual Database Support** — Zero-config **SQLite** out-of-the-box for instant local execution, plus **MySQL** support for scalable production deployments.
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3, Flask, Flask-SQLAlchemy, Flask-Login |
-| Frontend | HTML5, CSS3 (vanilla), JavaScript (vanilla) |
-| Database | MySQL (via PyMySQL) |
+---
 
-## Setup
+## 🏗️ Project Architecture & File Structure
+
+```
+student-study-planner/
+├── app.py              # Main Flask application with Web & REST API routes
+├── config.py           # Configuration settings (SQLite local / MySQL production)
+├── models.py           # SQLAlchemy ORM models (User, Subject, Task, StudySlot, ScheduleEntry)
+├── scheduler.py        # Rule-based auto-scheduling algorithm engine
+├── init_db.py          # Database initialization script
+├── requirements.txt    # Python dependencies
+├── study_planner.db    # Local SQLite database instance (auto-generated)
+├── static/
+│   ├── css/
+│   │   └── style.css   # Lumina glassmorphic theme styling & CSS variables
+│   └── js/
+│       └── main.js     # Availability grid drag handler, charts, dynamic filters
+└── templates/
+    ├── base.html       # Master layout with navigation bar & flash messages
+    ├── index.html      # Public landing page
+    ├── login.html      # Login authentication view
+    ├── register.html   # User registration view
+    ├── dashboard.html  # Main overview dashboard
+    ├── subjects.html   # Subject creation & management
+    ├── tasks.html      # Task tracking & management
+    ├── availability.html # Weekly availability grid configuration
+    ├── schedule.html   # Generated weekly study plan calendar view
+    └── analytics.html  # Progress analytics & visualization charts
+```
+
+---
+
+## 🗄️ Database Schema
+
+The database consists of 5 relational entities:
+
+```
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│    Users    │──────<│  Subjects   │──────<│    Tasks    │
+└──────┬──────┘       └──────┬──────┘       └──────┬──────┘
+       │                     │                     │
+       │                     └──────────┬──────────┘
+       │                                │
+       ├───────────────────────────────>│
+       │                         ┌──────┴──────────────┐
+       └────────────────────────>│   ScheduleEntries   │
+                                 └─────────────────────┘
+```
+
+1. **`Users`**: User account credentials, hashed password, email, and metadata.
+2. **`Subjects`**: User's subjects with priority, difficulty, color code, and weekly target hours.
+3. **`Tasks`**: Specific assignments, exam prep, or readings with deadlines and estimated hours.
+4. **`StudySlots`**: Recurring weekly available time slots (Day of week 0–6, start hour, end hour).
+5. **`ScheduleEntries`**: Output generated study blocks assigned to specific subjects, tasks, and time slots.
+
+---
+
+## 🧠 Smart Scheduling Algorithm
+
+The rule-based algorithm in [`scheduler.py`](file:///Users/rohitverma/.gemini/antigravity-ide/scratch/study-planner/scheduler.py) ranks unassigned tasks and subject targets using a composite priority score:
+
+$$\text{Composite Score} = \text{Urgency} \times \text{Priority Weight} \times (1 + \text{Difficulty Factor})$$
+
+- **Urgency Factor**: $\frac{1}{\max(1, \text{days until deadline})}$
+- **Priority Weight**: High = $3.0$, Medium = $2.0$, Low = $1.0$
+- **Difficulty Factor**: Hard = $0.50$, Medium = $0.25$, Easy = $0.00$
+
+Allocations are greedily scheduled into available user study slots while enforcing spaced repetition limits (max study hours per day per subject) and weekly balance constraints.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.8+
-- MySQL Server
+- **Python 3.8+** installed on your system.
+- *(Optional)* MySQL Server if running in production mode.
 
-### Installation
+### Quick Setup (SQLite Local Dev)
 
 1. **Clone the repository**
    ```bash
@@ -39,74 +106,71 @@ A full-stack web application built with **Python Flask, HTML, CSS, JavaScript, a
    cd student-study-planner
    ```
 
-2. **Create a virtual environment**
+2. **Create and activate a virtual environment**
    ```bash
    python3 -m venv venv
-   source venv/bin/activate
+   source venv/bin/activate    # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies**
+3. **Install required dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Create the MySQL database**
-   ```sql
-   CREATE DATABASE study_planner;
-   ```
-
-5. **Configure environment variables** (optional)
-   ```bash
-   export MYSQL_USER=root
-   export MYSQL_PASSWORD=yourpassword
-   export MYSQL_HOST=localhost
-   export MYSQL_PORT=3306
-   export MYSQL_DB=study_planner
-   ```
-   Or edit `config.py` directly.
-
-6. **Initialize database tables**
+4. **Initialize the database**
    ```bash
    python init_db.py
    ```
 
-7. **Run the application**
+5. **Run the application**
    ```bash
    python app.py
    ```
 
-8. Open **http://localhost:5000** in your browser.
+6. Open **http://localhost:5000** in your web browser.
 
-## Database Schema
+---
 
-```
-Users ─┬── Subjects ─┬── Tasks
-       │             └── ScheduleEntries
-       ├── StudySlots
-       └── ScheduleEntries
-```
+## ⚙️ Configuration & MySQL Deployment
 
-- **Users** — Authentication and session management
-- **Subjects** — Academic subjects with priority/difficulty metadata
-- **Tasks** — Study tasks with deadlines and estimated hours
-- **StudySlots** — Weekly availability time slots
-- **ScheduleEntries** — Generated schedule blocks
+By default, the app uses an auto-created SQLite database file (`study_planner.db`).
 
-## Scheduling Algorithm
+To switch to **MySQL**:
+1. Configure environment variables in your terminal:
+   ```bash
+   export MYSQL_USER=root
+   export MYSQL_PASSWORD=your_password
+   export MYSQL_HOST=localhost
+   export MYSQL_PORT=3306
+   export MYSQL_DB=study_planner
+   ```
+2. Or update the URI in [`config.py`](file:///Users/rohitverma/.gemini/antigravity-ide/scratch/study-planner/config.py):
+   ```python
+   SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://user:password@localhost:3306/study_planner'
+   ```
 
-The rule-based engine uses a **composite score** to rank and allocate tasks:
+---
 
-```
-Score = urgency × priority_weight × (1 + difficulty_factor)
-```
+## 🌐 API & Web Routes
 
-Where:
-- `urgency = 1 / days_until_deadline`
-- `priority_weight` = High: 3, Medium: 2, Low: 1
-- `difficulty_factor` = Hard: 0.5, Medium: 0.25, Easy: 0
+| Route | Method | Description |
+|---|---|---|
+| `/` | GET | Public landing page |
+| `/login` | GET, POST | User authentication login |
+| `/register` | GET, POST | New account registration |
+| `/logout` | GET | User logout |
+| `/dashboard` | GET | Overview dashboard with summary stats |
+| `/subjects` | GET, POST | View and add subjects |
+| `/subjects/delete/<id>` | POST | Delete subject |
+| `/tasks` | GET, POST | View and create study tasks |
+| `/tasks/toggle/<id>` | POST | Toggle task completion status |
+| `/availability` | GET, POST | Manage weekly available study slots |
+| `/schedule` | GET | View weekly auto-generated study schedule |
+| `/schedule/generate` | POST | Trigger smart auto-scheduler engine |
+| `/analytics` | GET | View study progress & performance analytics |
 
-Tasks are sorted by score and greedily allocated to available time slots with spaced repetition across days.
+---
 
-## License
+## 📄 License
 
-MIT
+This project is open-source under the **MIT License**.
